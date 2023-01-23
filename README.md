@@ -18,6 +18,12 @@
 - [Batch Example](https://github.com/idslme/IDSL.NPA#batch-example)
 - [Citation](https://github.com/idslme/IDSL.NPA#citation)
 
+## Features of IDSL.NPA
+
+1) Parameter selection through a user-friendly and well-described [parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.NPA/main/NPA_parameters.xlsx)
+2) Analyzing population size untargeted studies (n > 500)
+3) Parallel processing in Windows and Linux environments
+
 ## Installation
 
 	install.packages("IDSL.NPA")
