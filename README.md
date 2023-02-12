@@ -63,8 +63,10 @@ IDSL.NPA_workflow("Address of the NPA parameter spreadsheet")
 
 4. You may parse the results at the address you provided for **NPA0008**.
 
+## [**Wiki**](https://github.com/idslme/IDSL.NPA/wiki)
+
+1. [**IDSL.NPA example**](https://github.com/idslme/IDSL.NPA/wiki/NPA-for-hydroxylamine)
+
 ## Citation
 
 [1] Fakouri Baygi, S., Kumar, Y. Barupal, D.K. [IDSL.CSA: Composite Spectra Analysis for Chemical Annotation of Untargeted Metabolomics Datasets](https://doi.org/10.1101/2023.02.09.527886). *bioRxiv*, **2023**.
-
-[2] Fakouri Baygi, S., Kumar, Y. Barupal, D.K. [IDSL. IPA characterizes the organic chemical space in untargeted LC/HRMS datasets](https://pubs.acs.org/doi/10.1021/acs.jproteome.2c00120). *Journal of proteome research*, **2022**, *21(6)*, 1485-1494.
