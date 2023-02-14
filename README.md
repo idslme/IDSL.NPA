@@ -22,7 +22,9 @@
 
 1) Parameter selection through a user-friendly and well-described [parameter spreadsheet](https://raw.githubusercontent.com/idslme/IDSL.NPA/main/NPA_parameters.xlsx)
 2) Analyzing population size untargeted studies (n > 500)
-3) Parallel processing in Windows and Linux environments
+3) Generating batch untargeted aligned extracted ion chromatograms (EIC) figures.
+4) Parallel processing in Windows and Linux environments
+5) Integration with [IDSL.FSA](https://github.com/idslme/IDSL.FSA) workflow to annotate various types of MSP files and generating fragmentation libraries using nominal mass values.
 
 ## Installation
 
