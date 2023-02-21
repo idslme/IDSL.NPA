@@ -8,7 +8,7 @@
 [![Dependencies](https://tinyverse.netlify.com/badge/IDSL.NPA)](https://cran.r-project.org/package=IDSL.NPA)
 <!-- badges: end -->
 
-**Nominal Peak Analysis (NPA)** by the [**Integrated Data Science Laboratory for Metabolomics and Exposomics (IDSL.ME)**](https://www.idsl.me/) is an R package to facilitate processing of nominal mass spectrometry data. IDSL.NPA encapsulates a peak deconvolution workflow that was inspired by the approach taken by [IDSL.CSA](https://github.com/idslme/IDSL.CSA), while IDSL.NPA is exclusively capable of processing nominal mass data. Notably, IDSL.NPA does not require MS1 pre-processing to identify MS1 peaks. Additionally, IDSL.NPA is able to create and annotate *.msp* files which can be employed for subsequent untargeted MS/MS analysis.
+**Nominal Peak Analysis (NPA)** by the [**Integrated Data Science Laboratory for Metabolomics and Exposomics (IDSL.ME)**](https://www.idsl.me/) is an R package to facilitate processing of nominal mass spectrometry data. IDSL.NPA encapsulates a peak deconvolution workflow that was inspired by the approach taken by [IDSL.CSA](https://github.com/idslme/IDSL.CSA), while IDSL.NPA is exclusively capable of processing nominal mass data. Notably, IDSL.NPA does not require MS1 pre-processing to identify MS1 peaks. IDSL.NPA is able to create and annotate *.msp* files which can be employed for subsequent untargeted MS/MS analysis.
 
 ## Table of Contents
 
