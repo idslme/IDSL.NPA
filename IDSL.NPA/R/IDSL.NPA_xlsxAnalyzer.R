@@ -188,9 +188,9 @@ IDSL.NPA_xlsxAnalyzer <- function(spreadsheet) {
           ##
           refMSPcreationCheck <- file.exists(as.character(PARAM_NPA[which(PARAM_NPA[, 1] == 'NPA0005'), 2]))
           if (refMSPcreationCheck) {
-            annex_MSP <- "/CSA_REF_MSP"
+            annex_MSP <- "/NPA_REF_MSP"
           } else {
-            annex_MSP <- "/CSA_MSP"
+            annex_MSP <- "/NPA_MSP"
           }
           ##
           xNPA0008 <- which(PARAM_NPA[, 1] == 'NPA0008')

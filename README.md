@@ -1,7 +1,7 @@
 # IDSL.NPA<img src='NPA_educational_files/Figures/IDSL.NPA-logo.png' width="250px" align="right" />
 
 <!-- badges: start -->
-[![Maintainer](https://img.shields.io/badge/maintainer-Sadjad_Fakouri_Baygi-blue)](https://github.com/sajfb)
+[![Developed-by](https://img.shields.io/badge/Developed_by-Sadjad_Fakouri_Baygi-blue)](https://github.com/sajfb)
 [![CRAN status](https://www.r-pkg.org/badges/version/IDSL.NPA)](https://cran.r-project.org/package=IDSL.NPA)
 ![](http://cranlogs.r-pkg.org/badges/IDSL.NPA?color=orange)
 ![](http://cranlogs.r-pkg.org/badges/grand-total/IDSL.NPA?color=brightgreen)

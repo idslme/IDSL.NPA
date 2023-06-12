@@ -1,5 +1,11 @@
 NPA_workflow <- function(PARAM_NPA) {
   ##
+  if (length(PARAM_NPA) == 1) {
+    if (typeof(PARAM_NPA) == "character") {
+      stop("Please use `IDSL.NPA_workflow('spreadsheet')` to use the IDSL.NPA package!")
+    }
+  }
+  ##
   NPA0001 <- tolower(PARAM_NPA[which(PARAM_NPA[, 1] == 'NPA0001'), 2])
   NPA0002 <- tolower(PARAM_NPA[which(PARAM_NPA[, 1] == 'NPA0002'), 2])
   NPT <- as.numeric(PARAM_NPA[which(PARAM_NPA[, 1] == 'NPA0003'), 2])
@@ -7,7 +13,6 @@ NPA_workflow <- function(PARAM_NPA) {
   ##
   output_address <- PARAM_NPA[which(PARAM_NPA[, 1] == 'NPA0008'), 2]
   FSA_dir.create(output_address, allowedUnlink = FALSE)
-  opendir(output_address)
   ##
   ##############################################################################
   ## To create log record for IDSL.FSA
@@ -16,6 +21,7 @@ NPA_workflow <- function(PARAM_NPA) {
   .logFSA <- NULL
   .logFSA <<- paste0(output_address, "/logNPA_performance.txt")
   FSA_logRecorder(paste0(rep("", 100), collapse = "="))
+  FSA_logRecorder("Type <<< citation('IDSL.NPA') >>> for citing this R package in publications.")
   FSA_logRecorder(paste0("mzML/mzXML/netCDF:  ", input_path_ms))
   FSA_logRecorder(paste0("OUTPUT:  ", output_address))
   FSA_logRecorder(paste0(rep("", 100), collapse = "-"))
@@ -74,8 +80,6 @@ NPA_workflow <- function(PARAM_NPA) {
   ##
   ##############################################################################
   ##
-  IDSL.IPA::opendir(output_NPA_MSP)
-  ##
   LMS <- length(file_name_ms)
   if (LMS == 0) {
     stop(FSA_logRecorder("EMPTY HRMS FOLDER!!!"))
@@ -117,10 +121,7 @@ NPA_workflow <- function(PARAM_NPA) {
     ##
     ############################################################################
     ##
-    NPA_workflow_call <- function(plotEICcheck, outputNPAeic, output_NPA_EICs_folder, input_path_ms, iMSfilename,
-                                  smoothingWindow, peakHeightThreshold, minSNRbaseline, RTtolerance, nSpline,
-                                  topRatioPeakHeight, minIonRangeDifference, minNumNPApeaks, pearsonRHOthreshold,
-                                  NPT, refMSPcreationCheck, refMSindexList, refNPAtable, RTtoleranceRef, output_NPA_MSP) {
+    NPA_workflow_call <- function(iMSfilename) {
       ##
       if (plotEICcheck) {
         outputNPAeic <- paste0(output_NPA_EICs_folder, "/NPA_EICs_", iMSfilename)
@@ -165,19 +166,16 @@ NPA_workflow <- function(PARAM_NPA) {
       return()
     }
     ##
-    ##############################################################################
+    ############################################################################
     ##
     if (NPT == 1 | parallelizationMode == "peakmode") {
       ##
       iCounter <- 0
       progressBARboundaries <- txtProgressBar(min = 0, max = LMS, initial = 0, style = 3)
-      for (i in file_name_ms) {
+      for (iMSfilename in file_name_ms) {
         ##
-        null_variable <- tryCatch(NPA_workflow_call(plotEICcheck, outputNPAeic, output_NPA_EICs_folder, input_path_ms, iMSfilename = i,
-                                                    smoothingWindow, peakHeightThreshold, minSNRbaseline, RTtolerance, nSpline,
-                                                    topRatioPeakHeight, minIonRangeDifference, minNumNPApeaks, pearsonRHOthreshold,
-                                                    NPT, refMSPcreationCheck, refMSindexList, refNPAtable, RTtoleranceRef, output_NPA_MSP),
-                                  error = function(e) {FSA_logRecorder(paste0("Problem with `", i,"`!"))})
+        null_variable <- tryCatch(NPA_workflow_call(iMSfilename),
+                                  error = function(e) {FSA_logRecorder(paste0("Problem with `", iMSfilename,"`!"))})
         ##
         iCounter <- iCounter + 1
         setTxtProgressBar(progressBARboundaries, iCounter)
@@ -190,34 +188,28 @@ NPA_workflow <- function(PARAM_NPA) {
       ##
       osType <- Sys.info()[['sysname']]
       ##
-      if (osType == "Linux") {
+      if (osType == "Windows") {
         ##
-        null_variable <- mclapply(file_name_ms, function(i) {
+        clust <- makeCluster(NPT0)
+        clusterExport(clust, setdiff(ls(), c("clust", "file_name_ms")), envir = environment())
+        ##
+        null_variable <- parLapply(clust, file_name_ms, function(iMSfilename) {
           ##
-          tryCatch(NPA_workflow_call(plotEICcheck, outputNPAeic, output_NPA_EICs_folder, input_path_ms, iMSfilename = i,
-                                     smoothingWindow, peakHeightThreshold, minSNRbaseline, RTtolerance, nSpline,
-                                     topRatioPeakHeight, minIonRangeDifference, minNumNPApeaks, pearsonRHOthreshold,
-                                     NPT, refMSPcreationCheck, refMSindexList, refNPAtable, RTtoleranceRef, output_NPA_MSP),
-                   error = function(e) {FSA_logRecorder(paste0("Problem with `", i,"`!"))})
+          tryCatch(NPA_workflow_call(iMSfilename),
+                   error = function(e) {FSA_logRecorder(paste0("Problem with `", iMSfilename,"`!"))})
+        })
+        ##
+        stopCluster(clust)
+        ##
+      } else {
+        ##
+        null_variable <- mclapply(file_name_ms, function(iMSfilename) {
+          ##
+          tryCatch(NPA_workflow_call(iMSfilename),
+                   error = function(e) {FSA_logRecorder(paste0("Problem with `", iMSfilename,"`!"))})
         }, mc.cores = NPT0)
         ##
         closeAllConnections()
-        ##
-      } else if (osType == "Windows") {
-        ##
-        clust <- makeCluster(NPT0)
-        registerDoParallel(clust)
-        ##
-        null_variable <- foreach(i = file_name_ms, .verbose = FALSE) %dopar% {
-          ##
-          tryCatch(NPA_workflow_call(plotEICcheck, outputNPAeic, output_NPA_EICs_folder, input_path_ms, iMSfilename = i,
-                                     smoothingWindow, peakHeightThreshold, minSNRbaseline, RTtolerance, nSpline,
-                                     topRatioPeakHeight, minIonRangeDifference, minNumNPApeaks, pearsonRHOthreshold,
-                                     NPT, refMSPcreationCheck, refMSindexList, refNPAtable, RTtoleranceRef, output_NPA_MSP),
-                   error = function(e) {FSA_logRecorder(paste0("Problem with `", i,"`!"))})
-        }
-        ##
-        stopCluster(clust)
         ##
       }
       NPT <- NPT0

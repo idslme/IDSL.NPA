@@ -10,7 +10,7 @@ NPA_fragmentationPeakDetection <- function(input_MS_path, MSfilename, smoothingW
   } else {
     ##
     oldpar <- par(no.readonly = TRUE)
-    on.exit(par(oldpar))
+    on.exit(suppressWarnings(par(oldpar)))
     ##
     plotEICcheck <- TRUE
     ##
@@ -70,11 +70,12 @@ NPA_fragmentationPeakDetection <- function(input_MS_path, MSfilename, smoothingW
             ####################################################################
             NPA_EICs <- lapply(x_fragment, function(k) {
               ##
-              RT_chrom_fragment <- RetentionTime[leftBoundary[k]:rightBoundary[k]]
-              Int_chrom_fragment <- smoothEIC[idNPA[k], leftBoundary[k]:rightBoundary[k]]
-              ##
               height_fragment <- rawEIC[idNPA[k], apexID[k]]
               if (height_fragment > 0) {
+                ##
+                peak_boundaries_k <- seq(leftBoundary[k], rightBoundary[k], 1)
+                RT_chrom_fragment <- RetentionTime[peak_boundaries_k]
+                Int_chrom_fragment <- smoothEIC[idNPA[k], peak_boundaries_k]
                 ##
                 Int_spline_fragment <- approx(RT_chrom_fragment, Int_chrom_fragment, RT_spline_precursor, method = "linear", 0, 0, rule = 2, f = 0, ties = mean)[[2]]
                 #
@@ -88,6 +89,9 @@ NPA_fragmentationPeakDetection <- function(input_MS_path, MSfilename, smoothingW
                     } else {
                       NPAEICdata <- NULL
                     }
+                    ##
+                    xTopRatioPeakHeight <- which(rawEIC[idNPA[k], peak_boundaries_k]/height_fragment >= (1 - topRatioPeakHeight))
+                    height_fragment <- sum(rawEIC[idNPA[k], peak_boundaries_k[xTopRatioPeakHeight]]) # to use an integrated intensity of the raw chromatogram
                     ##
                     NPA_fragments <- c(mzNPA[k], height_fragment, pearsonRHO, SNRbaseline[k])
                     ##
@@ -159,7 +163,7 @@ NPA_fragmentationPeakDetection <- function(input_MS_path, MSfilename, smoothingW
                   png(alignedEICfilename, width = 16, height = 8, units = "in", res = 100)
                   ##
                   par(mar = c(5.1, 4.1, 4.1, 13.8))
-                  plot(RT_chrom_precursor, Int_chrom_precursor, type = "l", ylim = c(0, yMaxLimPlot*1.01), lwd = 4, col = colors[1], cex = 4, xlab = "", ylab = "")
+                  plot(RT_chrom_precursor, Int_chrom_precursor, type = "l", ylim = c(0, yMaxLimPlot*1.01), lwd = 4, col = colors[1], cex = 4, yaxt = "n", xlab = "", ylab = "")
                   ##
                   pCounter <- 1
                   for (p in 1:nLines1) {
@@ -175,9 +179,9 @@ NPA_fragmentationPeakDetection <- function(input_MS_path, MSfilename, smoothingW
                   ##
                   mtext(text = paste0("S = ", spectralEntropy), side = 3, adj = 1, line = 0.25, cex = 1.0)
                   mtext("Retention time (min)", side = 1, adj = 0.5, line = 2, cex = 1.35)
-                  mtext("Intensity", side = 2, adj = 0.5, line = 2, cex = 1.35)
-                  mtext(MSfilename, side = 3, adj = 0, line = 0.25, cex = 1.4)
-                  legend(x = "topright", inset = c(-0.22, 0), legend = legText, lwd = c(4, rep(2, nLines1)), cex = 1.125, bty = "n",
+                  mtext("Intensity", side = 2, adj = 0.20, line = 2, cex = 1.35)
+                  mtext(MSfilename, side = 3, adj = 0, line = 0.25, cex = 1.0)
+                  legend(x = "topright", inset = c(-0.20, 0), legend = legText, lwd = c(4, rep(2, nLines1)), cex = 1.125, bty = "n",
                          col = legCol, seg.len = 1, x.intersp = 0.5, y.intersp = 0.9, xpd = TRUE)
                   ##
                   dev.off()

@@ -105,7 +105,84 @@ NPA_peakDeconvolution <- function(input_MS_path, MSfilename, smoothingWindow, pe
     ##
     osType <- Sys.info()[['sysname']]
     ##
-    if (osType == "Linux") {
+    if (osType == "Windows") {
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "nRT")), envir = environment())
+      ##
+      mzIntSCN <- do.call(rbind, parLapply(clust, 1:nRT, function(j) {
+        call_mzIntSCN(j)
+      }))
+      ##
+      stopCluster(clust)
+      ####
+      spectraList <- NULL
+      ##
+      mzIntSCN[, 1] <- round(mzIntSCN[, 1], 0)
+      ##
+      mzIntSCN <- mzIntSCN[order(mzIntSCN[, 1], decreasing = FALSE), ]
+      ##
+      index_xic <- c(0, which(diff(mzIntSCN[, 1]) > 0), dim(mzIntSCN)[1])
+      Lindex_xic <- (length(index_xic) - 1)
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, c("mzIntSCN", "index_xic"), envir = environment())
+      ##
+      mzEIC <- do.call(c, parLapply(clust, 1:Lindex_xic, function(j) {
+        mzIntSCN[(index_xic[j] + 1), 1]
+      }))
+      ##
+      stopCluster(clust)
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "Lindex_xic")), envir = environment())
+      ##
+      rawEIC <- do.call(rbind, parLapply(clust, 1:Lindex_xic, function(j) {
+        call_rawEIC(j)
+      }))
+      ##
+      stopCluster(clust)
+      ####
+      mzIntSCN <- NULL
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "Lindex_xic")), envir = environment())
+      ##
+      smoothEIC <- do.call(rbind, parLapply(clust, 1:Lindex_xic, function(j) {
+        call_smoothEIC(j)
+      }))
+      ##
+      stopCluster(clust)
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, c("smoothEIC"), envir = environment())
+      ##
+      matrixSegment <- do.call(rbind, parLapply(clust, 1:Lindex_xic, function(j) {
+        islocaloptimum(smoothEIC[j, ])
+      }))
+      ##
+      stopCluster(clust)
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, c("smoothEIC", "matrixSegment"), envir = environment())
+      ##
+      baseline <- do.call(rbind, parLapply(clust, 1:Lindex_xic, function(j) {
+        Seg <- which(matrixSegment[j, ] == -1)
+        IPA_baselineDeveloper(Seg, smoothEIC[j, ])
+      }))
+      ##
+      stopCluster(clust)
+      ####
+      clust <- makeCluster(number_processing_threads)
+      clusterExport(clust, setdiff(ls(), c("clust", "Lindex_xic")), envir = environment())
+      ##
+      peaklistNPA <- do.call(rbind, parLapply(clust, 1:Lindex_xic, function(j) {
+        call_peaklistNPA(j)
+      }))
+      ##
+      stopCluster(clust)
+      ####
+    } else {
       ##
       mzIntSCN <- do.call(rbind, mclapply(1:nRT, function(j) {
         call_mzIntSCN(j)
@@ -147,50 +224,6 @@ NPA_peakDeconvolution <- function(input_MS_path, MSfilename, smoothingWindow, pe
       ##
       closeAllConnections()
       ##
-    } else if (osType == "Windows") {
-      ##
-      clust <- makeCluster(number_processing_threads)
-      registerDoParallel(clust)
-      ##
-      mzIntSCN <- foreach(j = 1:nRT, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        call_mzIntSCN(j)
-      }
-      spectraList <- NULL
-      ##
-      mzIntSCN[, 1] <- round(mzIntSCN[, 1], 0)
-      ##
-      mzIntSCN <- mzIntSCN[order(mzIntSCN[, 1], decreasing = FALSE), ]
-      ##
-      index_xic <- c(0, which(diff(mzIntSCN[, 1]) > 0), dim(mzIntSCN)[1])
-      Lindex_xic <- (length(index_xic) - 1)
-      ##
-      mzEIC <- foreach(j = 1:Lindex_xic, .combine = 'c', .verbose = FALSE) %dopar% {
-        mzIntSCN[(index_xic[j] + 1), 1]
-      }
-      ##
-      rawEIC <- foreach(j = 1:Lindex_xic, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        call_rawEIC(j)
-      }
-      mzIntSCN <- NULL
-      ##
-      smoothEIC <- foreach(j = 1:Lindex_xic, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        call_smoothEIC(j)
-      }
-      ##
-      matrixSegment <- foreach(j = 1:Lindex_xic, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        islocaloptimum(smoothEIC[j, ])
-      }
-      ##
-      baseline <- foreach(j = 1:Lindex_xic, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        Seg <- which(matrixSegment[j, ] == -1)
-        IPA_baselineDeveloper(Seg, smoothEIC[j, ])
-      }
-      ##
-      peaklistNPA <- foreach(j = 1:Lindex_xic, .combine = 'rbind', .verbose = FALSE) %dopar% {
-        call_peaklistNPA(j)
-      }
-      ##
-      stopCluster(clust)
     }
   }
   ##
